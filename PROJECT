@@ -1,0 +1,7 @@
+domain: devfile.io
+layout: go.kubebuilder.io/v2
+projectName: external-routing
+repo: github.com/devfile/devworkspace-operator/samples
+version: 3-alpha
+plugins:
+  go.sdk.operatorframework.io/v2-alpha: {}
