@@ -20,6 +20,10 @@ import (
 	"flag"
 	"os"
 
+	controllerv1alpha1 "github.com/devfile/devworkspace-operator/apis/controller/v1alpha1"
+	"github.com/devfile/devworkspace-operator/controllers/controller/workspacerouting"
+	"github.com/devfile/devworkspace-operator/samples/solvers"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -36,7 +40,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
+	utilruntime.Must(controllerv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -64,6 +68,16 @@ func main() {
 	}
 
 	// +kubebuilder:scaffold:builder
+
+	if err = (&workspacerouting.WorkspaceRoutingReconciler{
+		Client:        mgr.GetClient(),
+		Log:           ctrl.Log.WithName("controllers").WithName("WorkspaceRouting"),
+		Scheme:        mgr.GetScheme(),
+		GetSolverFunc: solvers.ExampleGetSolverFunc,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "WorkspaceRouting")
+		os.Exit(1)
+	}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
