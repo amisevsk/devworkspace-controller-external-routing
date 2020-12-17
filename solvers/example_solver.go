@@ -2,18 +2,18 @@ package solvers
 
 import (
 	controllerv1alpha1 "github.com/devfile/devworkspace-operator/apis/controller/v1alpha1"
-	"github.com/devfile/devworkspace-operator/controllers/controller/workspacerouting"
 	"github.com/devfile/devworkspace-operator/controllers/controller/workspacerouting/solvers"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ExampleSolver struct{}
 
 var _ solvers.RoutingSolver = (*ExampleSolver)(nil)
 
-func (s *ExampleSolver) GetSpecObjects(routing *controllerv1alpha1.WorkspaceRouting, workspaceMeta solvers.WorkspaceMetadata) solvers.RoutingObjects {
+func (s *ExampleSolver) GetSpecObjects(_ *controllerv1alpha1.WorkspaceRouting, workspaceMeta solvers.WorkspaceMetadata) solvers.RoutingObjects {
 	exampleService := corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "example-service",
@@ -66,11 +66,24 @@ func (s *ExampleSolver) GetExposedEndpoints(endpoints map[string]controllerv1alp
 	return exposedEndpoints, true, nil
 }
 
-func ExampleGetSolverFunc(routingClass controllerv1alpha1.WorkspaceRoutingClass) (solver solvers.RoutingSolver, err error) {
+type ExampleRoutingGetter struct{}
+
+var _ solvers.RoutingSolverGetter = (*ExampleRoutingGetter)(nil)
+
+func (e ExampleRoutingGetter) HasSolver(routingClass controllerv1alpha1.WorkspaceRoutingClass) bool {
+	switch routingClass {
+	case "external-sample":
+		return true
+	default:
+		return false
+	}
+}
+
+func (e ExampleRoutingGetter) GetSolver(_ client.Client, routingClass controllerv1alpha1.WorkspaceRoutingClass) (solver solvers.RoutingSolver, err error) {
 	switch routingClass {
 	case "external-sample":
 		return &ExampleSolver{}, nil
 	default:
-		return nil, workspacerouting.RoutingNotSupported
+		return nil, solvers.RoutingNotSupported
 	}
 }

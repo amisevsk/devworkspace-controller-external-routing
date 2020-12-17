@@ -70,10 +70,10 @@ func main() {
 	// +kubebuilder:scaffold:builder
 
 	if err = (&workspacerouting.WorkspaceRoutingReconciler{
-		Client:        mgr.GetClient(),
-		Log:           ctrl.Log.WithName("controllers").WithName("WorkspaceRouting"),
-		Scheme:        mgr.GetScheme(),
-		GetSolverFunc: solvers.ExampleGetSolverFunc,
+		Client:       mgr.GetClient(),
+		Log:          ctrl.Log.WithName("controllers").WithName("WorkspaceRouting"),
+		Scheme:       mgr.GetScheme(),
+		SolverGetter: &solvers.ExampleRoutingGetter{},
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "WorkspaceRouting")
 		os.Exit(1)
